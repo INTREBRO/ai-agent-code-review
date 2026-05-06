@@ -1,0 +1,346 @@
+name: AI Agent Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, develop, master]
+
+# 权限设置
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  # === 任务1：快速检查（格式、命名）===
+  quick-check:
+    name: 快速检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史用于 diff
+      
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: 安装依赖
+        run: npm ci
+      
+      - name: 代码格式检查（Prettier）
+        run: npm run format:check
+        continue-on-error: true
+      
+      - name: 代码规范检查（ESLint）
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: 命名规范检查
+        run: node .ai-review/check-naming.js
+        continue-on-error: true
+      
+      - name: 敏感信息扫描（GitLeaks）
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+      
+      - name: 上传结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-check-results
+          path: |
+            eslint-report.json
+            prettier-report.json
+            gitleaks-report.json
+
+  # === 任务2：深度分析（复杂度、重复代码、依赖漏洞）===
+  deep-analysis:
+    name: 深度分析
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: quick-check
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 安装分析工具
+        run: |
+          pip install radon  # 复杂度分析
+          pip install lizard  # 多语言复杂度分析
+          npm install -g jscpd  # 重复代码检测
+      
+      - name: 圈复杂度分析
+        run: |
+          echo "分析圈复杂度..."
+          radon cc . -a -nc -s --total-average > complexity-report.txt
+          cat complexity-report.txt
+      
+      - name: 认知复杂度分析
+        run: |
+          echo "分析认知复杂度..."
+          lizard . > cognitive-complexity-report.txt
+          cat cognitive-complexity-report.txt
+      
+      - name: 重复代码检测
+        run: |
+          echo "检测重复代码..."
+          jscpd . --output jscpd-report.json || true
+      
+      - name: 依赖漏洞扫描（Snyk）
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      - name: 上传结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deep-analysis-results
+          path: |
+            complexity-report.txt
+            cognitive-complexity-report.txt
+            jscpd-report.json
+            snyk-report.json
+
+  # === 任务3：AI 代码审查 ===
+  ai-review:
+    name: AI 代码审查
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quick-check, deep-analysis]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 安装依赖
+        run: |
+          pip install openai
+          pip install requests
+      
+      - name: 下载快速检查结果
+        uses: actions/download-artifact@v4
+        with:
+          name: quick-check-results
+        continue-on-error: true
+      
+      - name: 下载深度分析结果
+        uses: actions/download-artifact@v4
+        with:
+          name: deep-analysis-results
+        continue-on-error: true
+      
+      - name: 运行 AI Agent 审查
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          echo "启动 AI Agent 代码审查..."
+          python .ai-review/ai-agent-review.py
+      
+      - name: 上传审查报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-review-report
+          path: review-report.json
+
+  # === 任务4：结果汇总与报告 ===
+  report:
+    name: 生成审查报告
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [quick-check, deep-analysis, ai-review]
+    if: always()
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 下载所有结果
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+        continue-on-error: true
+      
+      - name: 汇总审查结果
+        id: summarize
+        run: |
+          echo "汇总审查结果..."
+          python .ai-review/summarize-results.py > summary.md
+          cat summary.md
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          cat summary.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: 发布 PR 评论
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+      
+      - name: 检查质量门禁
+        run: |
+          echo "检查质量门禁..."
+          python .ai-review/check-quality-gate.py
+      
+      - name: 更新检查状态
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let conclusion = 'success';
+            try {
+              const output = fs.readFileSync('quality-gate-result.txt', 'utf8');
+              if (output.includes('BLOCK')) {
+                conclusion = 'failure';
+              }
+            } catch (e) {
+              console.log('No quality gate result found');
+            }
+            github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AI Agent Code Review',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: conclusion
+            });
+
+  # === 任务5：通知 ===
+  notify:
+    name: 发送通知
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: report
+    if: failure()
+    
+    steps:
+      - name: 发送 Slack 通知
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            代码审查发现严重问题！
+            PR: ${{ github.event.pull_request.html_url }}
+            请及时处理。
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+      
+      - name: 发送邮件通知
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "代码审查发现严重问题 - ${{ github.repository }}"
+          body: |
+            代码审查发现严重问题，请及时处理。
+            PR 链接： ${{ github.event.pull_request.html_url }}
+          to: ${{ secrets.MAIL_RECIPIENTS }}
+        continue-on-error: true
+
+  # === 任务6：自学习（定时任务）===
+  self-learning:
+    name: 自学习 - 更新规则权重
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event.schedule == '0 2 * * 1'  # 每周一凌晨2点
+    needs: []
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 收集反馈数据
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "收集过去7天的反馈数据..."
+          python .ai-review/collect-feedback.py --days 7
+      
+      - name: 调整规则权重
+        run: |
+          echo "调整规则权重..."
+          python .ai-review/adjust-rule-weights.py
+      
+      - name: 发现新模式
+        run: |
+          echo "从反馈中发现新模式..."
+          python .ai-review/discover-patterns.py
+      
+      - name: 微调 AI 模型
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "微调 AI 模型..."
+          python .ai-review/fine-tune-model.py
+      
+      - name: 提交更新
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: 每周自学习更新规则权重和模式库"
+          file_pattern: ".ai-review/rules.json .ai-review/patterns.json"
+
+# ==========================================
+# 工作流调用示例（可复用）
+# ==========================================
+workflow_cal:
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      review_level:
+        description: '审查级别'
+        required: true
+        default: 'standard'
+        type: choice
+        options:
+          - 'quick'
+          - 'standard'
+          - 'detailed'
+  
+  # 定时触发（每周一凌晨2点运行自学习）
+  schedule:
+    - cron: '0 2 * * 1'
