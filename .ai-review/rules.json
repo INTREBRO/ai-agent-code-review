@@ -1,0 +1,203 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-05-06",
+  "rules": [
+    {
+      "id": "naming-variable-camelCase",
+      "name": "变量命名应使用 camelCase",
+      "severity": "warning",
+      "languages": ["javascript", "typescript", "java"],
+      "pattern": {
+        "type": "naming",
+        "case_style": "camelCase",
+        "min_length": 3,
+        "max_length": 30,
+        "blacklist": ["temp", "tmp", "foo", "bar", "data", "info", "flag"]
+      },
+      "message": "变量名应使用 camelCase 命名风格",
+      "auto_fix": false,
+      "weight": 1.0,
+      "enabled": true
+    },
+    {
+      "id": "naming-constant-UPPER_SNAKE_CASE",
+      "name": "常量命名应使用 UPPER_SNAKE_CASE",
+      "severity": "error",
+      "languages": ["javascript", "typescript", "python", "java"],
+      "pattern": {
+        "type": "naming",
+        "case_style": "UPPER_SNAKE_CASE",
+        "min_length": 5,
+        "max_length": 50
+      },
+      "message": "常量名应使用 UPPER_SNAKE_CASE 命名风格",
+      "auto_fix": false,
+      "weight": 1.2,
+      "enabled": true
+    },
+    {
+      "id": "complexity-cyclomatic-10",
+      "name": "圈复杂度不应超过 10",
+      "severity": "warning",
+      "languages": ["all"],
+      "pattern": {
+        "type": "complexity",
+        "metric": "cyclomatic",
+        "threshold": 10,
+        "action": "warn"
+      },
+      "message": "函数圈复杂度超过 10，建议重构",
+      "auto_fix": false,
+      "weight": 1.0,
+      "enabled": true
+    },
+    {
+      "id": "complexity-cyclomatic-15",
+      "name": "圈复杂度不应超过 15",
+      "severity": "error",
+      "languages": ["all"],
+      "pattern": {
+        "type": "complexity",
+        "metric": "cyclomatic",
+        "threshold": 15,
+        "action": "block"
+      },
+      "message": "函数圈复杂度超过 15，必须重构",
+      "auto_fix": false,
+      "weight": 1.5,
+      "enabled": true
+    },
+    {
+      "id": "security-sql-injection",
+      "name": "检测 SQL 注入漏洞",
+      "severity": "critical",
+      "languages": ["javascript", "typescript", "python", "java", "php"],
+      "pattern": {
+        "type": "ast",
+        "query": "query contains string_concatenation with user_input",
+        "examples": [
+          "SELECT * FROM users WHERE id = ' + userId",
+          "SELECT * FROM users WHERE id = ${userId}"
+        ]
+      },
+      "message": "检测到可能的 SQL 注入漏洞，请使用参数化查询",
+      "suggestion": "使用 prepareStatement 或 ORM 的参数化查询功能",
+      "auto_fix": false,
+      "weight": 2.0,
+      "enabled": true
+    },
+    {
+      "id": "security-hardcoded-secret",
+      "name": "检测硬编码敏感信息",
+      "severity": "critical",
+      "languages": ["all"],
+      "pattern": {
+        "type": "regex",
+        "patterns": [
+          "api[_-]?key\\s*[:=]\\s*['\\\"]\\w+['\\\"]",
+          "secret\\s*[:=]\\s*['\\\"]\\w+['\\\"]",
+          "password\\s*[:=]\\s*['\\\"]\\w+['\\\"]",
+          "token\\s*[:=]\\s*['\\\"]\\w+['\\\"]"
+        ]
+      },
+      "message": "检测到硬编码的敏感信息，请使用环境变量",
+      "suggestion": "使用 process.env.VARIABLE_NAME 代替硬编码",
+      "auto_fix": false,
+      "weight": 2.0,
+      "enabled": true
+    },
+    {
+      "id": "performance-n-plus-1",
+      "name": "检测 N+1 查询问题",
+      "severity": "warning",
+      "languages": ["javascript", "typescript", "python"],
+      "pattern": {
+        "type": "ast",
+        "query": "for_loop contains database_query",
+        "context_lines": 10
+      },
+      "message": "在循环中进行数据库查询，可能导致 N+1 问题",
+      "suggestion": "使用 IN 查询或 JOIN 一次性获取数据",
+      "auto_fix": false,
+      "weight": 1.5,
+      "enabled": true
+    },
+    {
+      "id": "maintainability-god-class",
+      "name": "检测上帝类",
+      "severity": "warning",
+      "languages": ["all"],
+      "pattern": {
+        "type": "metrics",
+        "conditions": {
+          "methods_count": "> 20",
+          "lines_count": "> 500",
+          "responsibilities": "> 3"
+        }
+      },
+      "message": "类职责过多，建议拆分为多个类",
+      "auto_fix": false,
+      "weight": 1.0,
+      "enabled": true
+    },
+    {
+      "id": "maintainability-magic-number",
+      "name": "检测魔法数字",
+      "severity": "info",
+      "languages": ["all"],
+      "pattern": {
+        "type": "ast",
+        "query": "literal number not in { -1, 0, 1, 100, 200, 404, 500, 1000 }",
+        "exclude_contexts": ["array_index", "loop_bound"]
+      },
+      "message": "使用魔法数字，建议使用常量",
+      "auto_fix": false,
+      "weight": 0.8,
+      "enabled": true
+    },
+    {
+      "id": "formatting-max-line-length-100",
+      "name": "行长度不应超过 100 字符",
+      "severity": "warning",
+      "languages": ["all"],
+      "pattern": {
+        "type": "line_length",
+        "max_length": 100,
+        "exclude_lines": ["import.*from", "export.*{", "console.log"]
+      },
+      "message": "行长度超过 100 字符，建议换行",
+      "auto_fix": true,
+      "auto_fix_command": "prettier --write {{file}}",
+      "weight": 0.5,
+      "enabled": true
+    }
+  ],
+  "rule_groups": {
+    "frontend": {
+      "name": "前端规则组",
+      "rules": [
+        "naming-variable-camelCase",
+        "naming-constant-UPPER_SNAKE_CASE",
+        "complexity-cyclomatic-10",
+        "security-hardcoded-secret",
+        "formatting-max-line-length-100"
+      ]
+    },
+    "backend": {
+      "name": "后端规则组",
+      "rules": [
+        "naming-variable-camelCase",
+        "naming-constant-UPPER_SNAKE_CASE",
+        "complexity-cyclomatic-15",
+        "security-sql-injection",
+        "security-hardcoded-secret",
+        "performance-n-plus-1",
+        "maintainability-god-class"
+      ]
+    },
+    "strict": {
+      "name": "严格规则组",
+      "rules": "all"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# 格式化配置
+# https://prettier.io/docs/configuration
+
+# 文件大小写敏感
+useTabs: false
+# 使用空格缩进
+tabWidth: 2
+# 换行符
+endOfLine: lf
+# 是否保留行尾分号
+semi: true
+# 使用单引号还是双引号
+singleQuote: false
+# 对象属性引号（as-needed | consistent | preserve）
+quoteProps: as-needed
+# JSX 使用双引号
+jsxSingleQuote: false
+# 尾随逗号（es5 | none | all）
+trailingComma: es5
+# 对象大扩号是否换行
+bracketSpacing: true
+# JSX 标签的反尖括号是否换行
+jsxBracketSameLine: false
+# 箭头函数参数括号（avoid | always）
+arrowParens: always
+# 范围格式化（不格式化的代码范围）
+rangeStart: 0
+rangeEnd: Infinity
+# 是否格式化指定文件范围的代码
+requirePragma: false
+# 是否插入 pragma 标记
+insertPragma: false
+# 是否自动换行（默认值：80）
+printWidth: 100
+# 换行方式（default | all | ignore）
+proseWrap: preserve
+# HTML 空格敏感
+htmlWhitespaceSensitivity: css
+# Vue 文件脚本和样式标签缩进
+vueIndentScriptAndStyle: false
+# 行尾是否保留分号
+endOfLine: lf
+# 是否格式化嵌入的代码
+embeddedLanguageFormatting: auto
+# 是否强制每行一个属性
+singleAttributePerLine: false

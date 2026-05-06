@@ -1,0 +1,119 @@
+# EditorConfig
+# https://editorconfig.org/
+
+root = true
+
+# ========== 通用设置 ==========
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# ========== 前端文件 ==========
+[*.js]
+indent_size = 2
+
+[*.jsx]
+indent_size = 2
+
+[*.ts]
+indent_size = 2
+
+[*.tsx]
+indent_size = 2
+
+[*.vue]
+indent_size = 2
+
+[*.svelte]
+indent_size = 2
+
+# ========== 后端文件 ==========
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+[*.java]
+indent_style = space
+indent_size = 4
+continuation_indent_size = 8
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+[*.rs]
+indent_style = space
+indent_size = 4
+
+# ========== 配置文件 ==========
+[*.json]
+indent_size = 2
+
+[*.yaml]
+indent_size = 2
+
+[*.yml]
+indent_size = 2
+
+[*.toml]
+indent_size = 2
+
+[*.xml]
+indent_size = 2
+indent_style = space
+
+[*.html]
+indent_size = 2
+
+[*.css]
+indent_size = 2
+
+[*.scss]
+indent_size = 2
+
+[*.less]
+indent_size = 2
+
+# ========== 文档文件 ==========
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 120
+
+[*.rst]
+trim_trailing_whitespace = false
+
+# ========== 脚本文件 ==========
+[Makefile]
+indent_style = tab
+
+[*.sh]
+indent_style = space
+indent_size = 2
+
+[*.bat]
+end_of_line = crlf
+
+[*.ps1]
+indent_style = space
+indent_size = 4
+
+# ========== 禁止文件 ==========
+[COMMIT_EDITMSG]
+trim_trailing_whitespace = false
+
+[*.min.js]
+indent_style = ignore
+indent_size = ignore
+
+[*.min.css]
+indent_style = ignore
+indent_size = ignore
+
+[*.bundle.js]
+indent_style = ignore
+indent_size = ignore

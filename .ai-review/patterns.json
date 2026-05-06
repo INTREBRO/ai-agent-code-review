@@ -1,0 +1,263 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-05-06",
+  "categories": {
+    "performance": {
+      "name": "性能反模式",
+      "patterns": [
+        {
+          "id": "n-plus-1-query",
+          "name": "N+1 查询问题",
+          "description": "在循环中执行数据库查询，导致 N+1 问题",
+          "severity": "warning",
+          "languages": ["javascript", "typescript", "python", "java"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "for_loop_with_db_query"
+          },
+          "example": {
+            "bad": "async function getUsersWithPosts() {\n  const users = await User.find();\n  for (const user of users) {\n    user.posts = await Post.find({ userId: user.id });\n  }\n}",
+            "good": "async function getUsersWithPosts() {\n  const users = await User.find();\n  const userIds = users.map(u => u.id);\n  const posts = await Post.find({ userId: { $in: userIds } });\n  return users.map(user => ({\n    ...user,\n    posts: posts.filter(p => p.userId === user.id)\n  }));\n}"
+          },
+          "suggestion": "使用 IN 查询或 JOIN 一次性获取数据",
+          "frequency": 45,
+          "discovered_date": "2026-05-01"
+        },
+        {
+          "id": "missing-pagination",
+          "name": "缺少分页",
+          "description": "查询全部数据，可能导致性能问题",
+          "severity": "warning",
+          "languages": ["all"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "find_all_without_limit"
+          },
+          "example": {
+            "bad": "const allUsers = await User.find();",
+            "good": "const users = await User.find().limit(20).skip(page * 20);"
+          },
+          "suggestion": "添加分页参数（limit, offset）",
+          "frequency": 38,
+          "discovered_date": "2026-05-02"
+        },
+        {
+          "id": "large-object-allocation",
+          "name": "大对象全量加载",
+          "description": "一次性加载大量数据到内存",
+          "severity": "warning",
+          "languages": ["all"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "read_file_without_stream"
+          },
+          "example": {
+            "bad": "const data = fs.readFileSync('large-file.csv');",
+            "good": "const stream = fs.createReadStream('large-file.csv');"
+          },
+          "suggestion": "使用流式处理或分页加载",
+          "frequency": 12,
+          "discovered_date": "2026-05-03"
+        }
+      ]
+    },
+    "security": {
+      "name": "安全反模式",
+      "patterns": [
+        {
+          "id": "sql-injection",
+          "name": "SQL 注入漏洞",
+          "description": "使用字符串拼接构建 SQL 语句",
+          "severity": "critical",
+          "languages": ["javascript", "python", "java", "php"],
+          "detection": {
+            "type": "regex",
+            "pattern": "SELECT.*FROM.*\\+.*\\$"
+          },
+          "example": {
+            "bad": "const query = `SELECT * FROM users WHERE id = '${req.params.id}'`;",
+            "good": "const query = 'SELECT * FROM users WHERE id = ?';\ndb.query(query, [req.params.id]);"
+          },
+          "suggestion": "使用参数化查询或 ORM",
+          "cwe_id": "CWE-89",
+          "owasp_category": "A03:2021 – Injection",
+          "frequency": 12,
+          "discovered_date": "2026-05-01"
+        },
+        {
+          "id": "xss-vulnerability",
+          "name": "跨站脚本（XSS）漏洞",
+          "description": "未对用户输入进行转义直接输出到页面",
+          "severity": "critical",
+          "languages": ["javascript", "typescript"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "innerHTML_without_escape"
+          },
+          "example": {
+            "bad": "element.innerHTML = userInput;",
+            "good": "element.textContent = userInput; // 或使用 DOMPurify"
+          },
+          "suggestion": "使用 textContent 或转义库（如 DOMPurify）",
+          "cwe_id": "CWE-79",
+          "owasp_category": "A07:2021 – Identification and Authentication Failures",
+          "frequency": 8,
+          "discovered_date": "2026-05-02"
+        },
+        {
+          "id": "hardcoded-secret",
+          "name": "硬编码敏感信息",
+          "description": "在代码中硬编码 API Key、密码等敏感信息",
+          "severity": "critical",
+          "languages": ["all"],
+          "detection": {
+            "type": "regex",
+            "pattern": "(api_key|secret|password|token)\\s*[:=]\\s*['\\\"]\\w+['\\\"]"
+          },
+          "example": {
+            "bad": "const API_KEY = 'sk_live_51H...';",
+            "good": "const API_KEY = process.env.API_KEY;"
+          },
+          "suggestion": "使用环境变量存储敏感信息",
+          "cwe_id": "CWE-798",
+          "owasp_category": "A02:2021 – Cryptographic Failures",
+          "frequency": 15,
+          "discovered_date": "2026-05-01"
+        }
+      ]
+    },
+    "maintainability": {
+      "name": "可维护性问题",
+      "patterns": [
+        {
+          "id": "god-class",
+          "name": "上帝类",
+          "description": "单个类承担过多职责",
+          "severity": "warning",
+          "languages": ["all"],
+          "detection": {
+            "type": "metrics",
+            "conditions": {
+              "methods_count": "> 20",
+              "lines_count": "> 500",
+              "coupling": "high"
+            }
+          },
+          "example": {
+            "bad": "class UserManager {\n  register() {}\n  login() {}\n  resetPassword() {}\n  sendEmail() {}\n  generateReport() {}\n  // ... 50 个方法\n}",
+            "good": "// 拆分为多个类\nclass UserAuth {}\nclass UserNotification {}\nclass UserReport {}"
+          },
+          "suggestion": "拆分为多个职责单一的类",
+          "frequency": 18,
+          "discovered_date": "2026-05-01"
+        },
+        {
+          "id": "magic-number",
+          "name": "魔法数字",
+          "description": "代码中使用无意义的数字字面量",
+          "severity": "info",
+          "languages": ["all"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "literal_number_not_in_constant"
+          },
+          "example": {
+            "bad": "if (user.age > 18) { ... }\nsetTimeout(callback, 30000);",
+            "good": "const ADULT_AGE = 18;\nconst REQUEST_TIMEOUT = 30000;\nif (user.age > ADULT_AGE) { ... }\nsetTimeout(callback, REQUEST_TIMEOUT);"
+          },
+          "suggestion": "将数字定义为有意义的常量",
+          "exclude": [-1, 0, 1, 100, 200, 404, 500],
+          "frequency": 156,
+          "discovered_date": "2026-05-01"
+        },
+        {
+          "id": "long-parameter-list",
+          "name": "过长参数列表",
+          "description": "函数参数过多，影响可读性和可维护性",
+          "severity": "warning",
+          "languages": ["all"],
+          "detection": {
+            "type": "metrics",
+            "threshold": "> 5"
+          },
+          "example": {
+            "bad": "function createUser(name, email, phone, address, city, country, postalCode, age) {}",
+            "good": "function createUser(userData) {}\n// userData = { name, email, phone, ... }"
+          },
+          "suggestion": "将参数封装为对象",
+          "frequency": 23,
+          "discovered_date": "2026-05-02"
+        },
+        {
+          "id": "deep-inheritance",
+          "name": "深度继承",
+          "description": "继承层级过深，增加复杂性",
+          "severity": "warning",
+          "languages": ["java", "python", "typescript"],
+          "detection": {
+            "type": "metrics",
+            "threshold": "> 3"
+          },
+          "example": {
+            "bad": "class A extends B extends C extends D { ... }",
+            "good": "// 使用组合代替继承\nclass A {\n  constructor(private b: B) {}\n}"
+          },
+          "suggestion": "考虑使用组合代替深层继承",
+          "frequency": 8,
+          "discovered_date": "2026-05-03"
+        }
+      ]
+    },
+    "reliability": {
+      "name": "可靠性问题",
+      "patterns": [
+        {
+          "id": "unhandled-promise",
+          "name": "未处理的 Promise 拒绝",
+          "description": "Promise 没有 catch 处理",
+          "severity": "error",
+          "languages": ["javascript", "typescript"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "unhandled_promise"
+          },
+          "example": {
+            "bad": "asyncFunction().then(result => console.log(result));",
+            "good": "asyncFunction()\n  .then(result => console.log(result))\n  .catch(error => console.error(error));"
+          },
+          "suggestion": "添加 .catch() 或使用 try-catch",
+          "frequency": 67,
+          "discovered_date": "2026-05-01"
+        },
+        {
+          "id": "null-pointer-dereference",
+          "name": "空指针解引用",
+          "description": "未检查空值就访问属性",
+          "severity": "error",
+          "languages": ["javascript", "typescript", "java"],
+          "detection": {
+            "type": "ast_pattern",
+            "pattern": "access_property_without_null_check"
+          },
+          "example": {
+            "bad": "const name = user.profile.name;",
+            "good": "const name = user?.profile?.name || 'Unknown';"
+          },
+          "suggestion": "添加空值检查或使用可选链（?.）",
+          "frequency": 89,
+          "discovered_date": "2026-05-01"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "total_patterns": 10,
+    "languages_covered": ["javascript", "typescript", "python", "java", "php"],
+    "severity_distribution": {
+      "critical": 3,
+      "error": 2,
+      "warning": 4,
+      "info": 1
+    }
+  }
+}
