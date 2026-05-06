@@ -1,0 +1,110 @@
+name: ✨ Feature Request
+description: 建议新功能或改进现有功能
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **感谢您提出新功能建议！**
+        
+        请详细描述您的需求，帮助我们更好地理解并评估这个建议。
+
+  - type: input
+    id: summary
+    attributes:
+      label: 📋 功能摘要
+      description: 用一句话概括您建议的功能
+      placeholder: "例如：添加对 Vue 3 项目的代码审查支持"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📊 功能类别
+      description: 这个功能属于哪个类别？
+      options:
+        - 新语言/框架支持
+        - 新审查规则
+        - CI/CD 集成改进
+        - 文档改进
+        - 性能优化
+        - UI/UX 改进
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 问题描述
+      description: 描述您遇到的问题或需求场景
+      placeholder: |
+        例如：
+        - 当前 AI 审查不支持 Vue 3 的 Composition API 语法
+        - 我们希望能够对 Vue 3 项目进行代码审查
+        - 当前解决方案的不足之处...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 建议方案
+      description: 描述您期望的解决方案或功能
+      placeholder: |
+        例如：
+        - 添加 Vue 3 的 AST 解析支持
+        - 增加 Composition API 的审查规则
+        - 支持 .vue 单文件组件的审查
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: 📸 示例（可选）
+      description: 提供代码示例、截图或伪代码
+      placeholder: |
+        ```javascript
+        // 示例代码
+        ```
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🔥 优先级
+      description: 这个功能的优先级如何？
+      options:
+        - 高（阻塞当前工作）
+        - 中（影响效率但不阻塞）
+        - 低（nice to have）
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: 🤝 贡献意愿
+      options:
+        - label: 我愿意提交 Pull Request 来实现这个功能
+        - label: 我愿意参与讨论和设计
+        - label: 我可以提供测试用例
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 补充信息（可选）
+      description: 任何其他相关信息
+      placeholder: "例如：参考文档链接、相关 Issue 编号等"
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 确认事项
+      options:
+        - label: 我已搜索现有 Issue，确认没有重复的功能请求
+          required: true
+        - label: 我已阅读项目的 Contribution Guidelines
+          required: true

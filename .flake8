@@ -1,0 +1,94 @@
+# .flake8 - Flake8 配置文件
+# Flake8 是一个 Python 代码风格检查工具
+# 官方文档：https://flake8.pycqa.org/
+
+[flake8]
+
+# 忽略的错误代码
+# 完整列表：https://flake8.pycqa.org/en/latest/user/error-codes.html
+ignore =
+    # E203 空格 before : （与 Black 冲突）
+    E203,
+    # E266 太多连续 # 号（有时需要）
+    E266,
+    # E501 行过长（使用 Black 格式化，不单独检查）
+    E501,
+    # W503 断行 before binary operator（与 Black 冲突）
+    W503,
+    # F401 导入但未使用（有时需要 __all__）
+    F401,
+    # F841 局部变量赋值但未使用（有时需要）
+    F841,
+
+# 排除的文件/目录
+exclude =
+    .git,
+    __pycache__,
+    .tox,
+    .eggs,
+    *.egg,
+    .venv,
+    venv,
+    .venv,
+    env,
+    .env,
+    build,
+    dist,
+    *.egg-info,
+    .eggs,
+    .stage,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    .ds_store,
+    node_modules,
+    venv,
+    ENV,
+    .ai-review/__pycache__,
+    
+
+# 最大行长度
+max-line-length = 120
+
+# 最大文档字符串/注释行长度
+max-doc-length = 120
+
+# 选择启用的检查（默认：E, F, W）
+# E = pycodestyle 错误
+# W = pycodestyle 警告
+# F = pyflakes 检查
+select = E, F, W, C90
+
+# 要进行复杂度检查（McCabe 复杂度）
+max-complexity = 15
+
+# 显示源码
+show-source = True
+
+# 显示错误统计
+statistics = True
+
+# 计数错误
+count = True
+
+# 输出格式
+format = colored
+
+# 是否将笔记作为警告（而不是错误）
+quiet = 0
+
+# 要忽略的文件（glob 模式）
+per-file-ignores =
+    # 测试文件可以有无用导入和过长行
+    tests/*.py: F401, E501
+    # __init__.py 可以有未使用的导入
+    **/__init__.py: F401, F403
+    # 设置文件可以有过长的行
+    setup.py, setup.cfg: E501
+    
+
+# 要忽略的警告（正则）
+# warn-errors = 
+
+# 使用 pyproject.toml 配置（如果可用）
+# extend-ignore =

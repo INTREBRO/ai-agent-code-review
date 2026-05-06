@@ -1,0 +1,233 @@
+# .pylintrc - Pylint 配置文件
+# Pylint 是一个 Python 代码静态检查工具
+# 官方文档：https://pylint.pycqa.org/
+
+[MASTER]
+
+# 指定额外的 Python 解释器路径
+# python-path=.
+
+# 递归限制
+recursive=yes
+
+# 要加载的 C 扩展模块列表（例如：分号分隔）
+extension-pkg-whitelist=
+
+# 要忽略的 C 扩展模块列表（例如：分号分隔）
+extension-pkg-ignore=
+
+# 允许的 C 扩展模块返回值（参见 Python 文档）
+# allowed-redefined-builtins=
+
+# 并行作业数（0 表示禁用）
+jobs=4
+
+# 要加载的插件（用逗号分隔）
+load-plugins=pylint.extensions.docparams,
+             pylint.extensions.docstyle,
+             pylint.extensions.f-string
+             
+
+# 控制 Pylint 对相对导入的处理方式
+# relative-beyond-top-level=no
+
+[MESSAGES CONTROL]
+
+# 禁用的消息 ID 或符号名称
+disable=
+    # 行过长（用 Black 格式化）
+    line-too-long,
+    # 缺少文档字符串（根据项目需要启用）
+    missing-docstring,
+    missing-function-docstring,
+    missing-class-docstring,
+    #  too-many-*
+    too-many-arguments,
+    too-many-locals,
+    too-many-branches,
+    too-many-statements,
+    #  too-few-public-methods（不强制）
+    too-few-public-methods,
+    # 变量名规则（如果项目使用 snake_case）
+    invalid-name,
+    # 导入错误（可能在虚拟环境中误报）
+    import-error,
+    # 未使用的参数（有时需要保留）
+    unused-argument,
+    # 本地禁用（有时需要临时禁用）
+    locally-disabled,
+    # 文件末尾空行
+    superfluous-parens,
+    # 考虑使用 in（有时需要明确）
+    consider-using-in,
+    
+
+# 启用的消息（如果之前被禁用）
+# enable=
+
+[REPORTS]
+
+# 设置输出格式（text, parseable, colorized, json, html）
+output-format=colorized
+
+# 在报告中包含消息的 ID
+include-ids=yes
+
+# 在报告中包含消息的符号名称
+symbols=no
+
+# 显示重复代码报告
+reports=no
+
+# 评分报告输出（否则为 10.00/10）
+score=yes
+
+[REFACTORING]
+
+# 重构提示的最大数量
+max-nested-blocks=5
+
+# 函数/方法的最大参数数（超过则警告）
+max-args=7
+
+# 函数/方法/类的最大局部变量数
+max-locals=25
+
+# 分支的最大数量
+max-branches=20
+
+# 语句的最大数量
+max-statements=50
+
+# 父类的最大数量
+max-parents=7
+
+# 属性、方法、类属性的最大数量
+max-attributes=20
+
+# 布尔表达式的最大数量
+max-bool-expr=5
+
+[BASIC]
+
+# 变量名正则
+variable-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# 函数名正则
+function-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# 方法名正则
+method-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# 类属性名正则
+class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__)|(_[A-Za-z0-9_]*__?))$
+
+# 内联变量名正则
+inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
+
+# 类名正则（使用 PascalCase）
+class-rgx=[A-Z_][a-zA-Z0-9]+$
+
+# 常量名正则（全大写 + 下划线）
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+# 模块名正则（小写 + 下划线）
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+
+# 良好命名（不警告）
+good-names=i,
+             j,
+             k,
+             ex,
+             Run,
+             _,
+             
+
+# 坏命名（总是警告）
+bad-names=foo,
+            bar,
+            baz,
+            toto,
+            tutu,
+            tata,
+            
+
+# 名称提示（正则表达式）
+name-hint=< 30 个字符，[a-z_][a-z0-9_]*$
+
+[FORMAT]
+
+# 最大单行长度
+max-line-length=120
+
+# 忽略的行（正则）
+ignore-long-lines=^\s*(# )?<?https?://\S+>?\s*$
+
+# 单行检查是否在函数/类定义之前有空行
+no-space-check=no
+
+# 最大模块大小
+max-module-lines=3000
+
+# 缩进字符串（空格或制表符）
+indent-string='    '
+
+[LOGGING]
+
+# 日志模块格式（例如：logging.getLogger(__name__)）
+logging-modules=logging
+
+[IMPORTS]
+
+# 已弃用的模块（将要移除）
+deprecated-modules=regsub,
+                   TERMIOS,
+                   Bastion,
+                   reprlib,
+                   
+
+# 创建图（Graph）文件
+create-graph=no
+
+# 最大深度（Graph）
+max-depth=10
+
+# 忽略的模块（用逗号分隔）
+ignore-imports=
+
+# 忽略的全局变量（用逗号分隔）
+ignored-global-variable=
+
+[CLASSES]
+
+# 定义 __slots__ 时忽略的类的列表
+defining-attr-methods=__init__,
+                       __new__,
+                       setUp,
+                       
+
+# 有效约定的列表（例如：约定名称）
+valid-classmethod-first-arg=cls
+
+# 有效元类的列表
+valid-metaclass-classmethod-first-arg=mcs
+
+[DESIGN]
+
+# 成员属性、方法的最大数量
+max-attributes=20
+
+# 类继承的最大层数
+max-parents=7
+
+# 公共方法的最大数量
+max-public-methods=20
+
+# 私有方法的最大数量
+max-private-methods=20
+
+[EXCEPTIONS]
+
+# 异常捕获中忽略的异常列表
+overgeneral-exceptions=Exception,
+                      

@@ -1,0 +1,156 @@
+# .pre-commit-config.yaml - 预提交钩子配置
+# 官方文档：https://pre-commit.com/
+
+# 安装：
+#   pip install pre-commit
+#   pre-commit install
+# 运行所有钩子：
+#   pre-commit run --all-files
+# 更新钩子：
+#   pre-commit autoupdate
+
+repos:
+  # ---- 基础钩子（检查基础问题） ----
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # 检查文件末尾是否有换行符
+      - id: end-of-file-fixer
+      # 检查 Python 文件语法
+      - id: check-ast
+      # 检查 JSON 文件格式
+      - id: check-json
+      # 检查 YAML 文件格式
+      - id: check-yaml
+      # 检查合并冲突
+      - id: check-merge-conflict
+      # 检查大文件（> 500KB）
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      # 检查私有密钥泄露
+      - id: detect-private-key
+      # 检查 AWS 凭证泄露
+      - id: detect-aws-credentials
+      # 修复文件末尾空行
+      - id: end-of-file-fixer
+      # 字符串格式化
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  # ---- Python 代码格式化（Black） ----
+
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=120]
+
+  # ---- Python 导入排序（isort） ----
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=120]
+
+  # ---- Python 代码规范检查（Flake8） ----
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=120, --extend-ignore=E203,W503]
+
+  # ---- Python 类型检查（mypy） ----
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, types-PyYAML]
+        args: [--ignore-missing-imports]
+
+  # ---- 代码安全扫描（Bandit） ----
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-ll, --recursive, .ai-review]
+
+  # ---- 密钥扫描（GitLeaks） ----
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        name: Detect hardcoded secrets
+        language: golang
+        entry: gitleaks protect --verbose --redact --staged
+
+  # ---- Markdown 格式化（mdformat） ----
+
+  - repo: https://github.com/executablebooks/mdbook
+    rev: v0.4.17
+    hooks:
+      - id: mdformat
+        args: [--wrap=120]
+
+  # ---- 自定义钩子（项目特定检查） ----
+
+  - repo: local
+    hooks:
+      # 检查 Python 代码复杂度（radiowave）
+      - id: radon-cc
+        name: Check Python code complexity
+        entry: radon
+        language: system
+        args: [cc, --min=C, --total-average=y, .ai-review]
+        types: [python]
+
+      # 检查 Python 代码维护指标（radiowave）
+      - id: radon-mi
+        name: Check Python code maintainability
+        entry: radon
+        language: system
+        args: [mi, --min=B, .ai-review]
+        types: [python]
+
+      # 检查 JavaScript 代码规范（ESLint）
+      - id: eslint
+        name: Check JavaScript code style
+        entry: npx
+        language: system
+        args: [eslint, .ai-review/ai-agent-review.js]
+        types: [javascript]
+        pass_filenames: false
+
+      # 检查 JSON 格式
+      - id: validate-json
+        name: Validate JSON files
+        entry: python -m json.tool
+        language: system
+        args: []
+        files: \.json$
+
+      # 检查 YAML 格式
+      - id: validate-yaml
+        name: Validate YAML files
+        entry: python -c "import yaml; yaml.safe_load(open('{}'))"
+        language: system
+        args: []
+        files: \.ya?ml$
+
+# ---- 全局配置 ----
+
+# 不安装默认 Git 钩子（只安装 pre-commit）
+default_install_hook_args: [--overwrite]
+
+# 串行运行所有钩子（False）还是并行运行（True）
+# 默认：True（并行）
+# default_parallel: true
+
+# 最低 pre-commit 版本要求
+minimum_pre_commit_version: '3.0.0'
