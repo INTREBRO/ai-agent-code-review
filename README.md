@@ -58,13 +58,27 @@
 
 ```
 .
-├── README.md                          # 本文件
-├── ai-agent-code-review-workflow.md  # 完整设计文档
-├── LICENSE                           # 开源协议
-└── examples/                         # 示例代码（待补充）
-    ├── .ai-review-config.yml          # 配置文件示例
-    ├── github-actions-example.yml    # GitHub Actions 示例
-    └── pattern-library.json          # 模式库示例
+├── README.md                            # 本文件
+├── LICENSE                              # MIT 开源协议
+├── ai-agent-code-review-workflow.md     # 完整设计文档
+├── IMPLEMENTATION-CHECKLIST.md         # 实施清单
+├── .ai-review/                          # AI 审查核心文件
+│   ├── ai-agent-review.py               # Python 审查脚本
+│   ├── ai-agent-review.js              # JavaScript 审查脚本
+│   ├── rules.json                      # 审查规则库
+│   └── patterns.json                   # 模式匹配库
+├── .github/                            # GitHub 模板
+│   └── ISSUE_TEMPLATE/
+│       └── bug-report.yml              # Bug 报告模板
+├── .ai-review-config.yml               # AI 审查配置
+├── .editorconfig                       # 编辑器配置
+├── .eslintrc.json                      # ESLint 配置
+├── .gitleaks.toml                      # GitLeaks 密钥扫描
+├── .prettierrc                         # Prettier 配置
+├── .snyk                               # Snyk 安全配置
+├── jest.config.example.js              # Jest 配置示例
+├── sonar-project.properties            # SonarQube 配置
+└── tsconfig.json.example               # TypeScript 配置示例
 ```
 
 ---
