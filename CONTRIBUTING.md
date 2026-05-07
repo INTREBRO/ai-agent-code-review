@@ -289,7 +289,6 @@ Reviewer 将检查：
 
 - **Issue Tracker**: [https://github.com/INTREBRO/ai-agent-code-review/issues](https://github.com/INTREBRO/ai-agent-code-review/issues)
 - **Discussions**: [https://github.com/INTREBRO/ai-agent-code-review/discussions](https://github.com/INTREBRO/ai-agent-code-review/discussions)
-- **Email**: [您的邮箱]
 
 ---
 
