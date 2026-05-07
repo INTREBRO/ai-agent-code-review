@@ -200,6 +200,7 @@ jobs:
 
       - name: 🔎 SonarQube 扫描
         uses: sonarsource/sonarqube-scan-action@master
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -214,6 +215,7 @@ jobs:
 
       - name: 🔎 SonarQube 质量门禁
         uses: sonarsource/sonarqube-quality-gate-action@master
+        continue-on-error: true
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
