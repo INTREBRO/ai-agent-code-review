@@ -292,7 +292,7 @@ jobs:
           args: --all-projects --severity-threshold=high
 
       - name: 🔒 OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check-Action@main
+        uses: dependency-check/Dependency-Check_Action@main
         with:
           project: 'ai-agent-code-review'
           path: '.'
