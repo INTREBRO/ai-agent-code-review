@@ -207,7 +207,6 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=ai-agent-code-review
-            -Dsonar.projectName=AI Agent Code Review
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/venv/**,**/__pycache__/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
