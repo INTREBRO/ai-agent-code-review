@@ -27,9 +27,11 @@ REPO_NAME = os.getenv("REPO_NAME")
 
 # ========== AI 审查引擎 ==========
 class AICodeReviewer:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, provider: str = None):
         self.api_key = api_key
-        self.provider = os.getenv("AI_PROVIDER", "openai").lower()
+        self.last_usage = None
+        self.last_raw_response = None
+        self.provider = (provider or os.getenv("AI_PROVIDER", "openai")).lower()
         if self.provider == "deepseek":
             self.api_url = "https://api.deepseek.com/chat/completions"
             self.model = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
@@ -48,6 +50,8 @@ class AICodeReviewer:
         使用 AI 模型生成代码审查意见
         """
         prompt = self._build_prompt(code_diff, file_path, context)
+        self.last_usage = None
+        self.last_raw_response = None
         
         payload = {
             "model": self.model,
@@ -63,7 +67,10 @@ class AICodeReviewer:
         
         response = requests.post(self.api_url, headers=self.headers, json=payload, timeout=60)
         response.raise_for_status()
-        review_text = response.json()["choices"][0]["message"]["content"]
+        response_data = response.json()
+        self.last_usage = response_data.get("usage")
+        review_text = response_data["choices"][0]["message"]["content"]
+        self.last_raw_response = review_text
         return self._parse_review(review_text)
     
     def _build_prompt(self, code_diff: str, file_path: str, context: str = "") -> str:

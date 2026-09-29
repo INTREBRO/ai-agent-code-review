@@ -141,6 +141,26 @@ class ReviewWorkflowTests(unittest.TestCase):
         self.assertEqual({"type": "json_object"}, kwargs["json"].get("response_format"))
         self.assertEqual("Bearer test-deepseek-key", kwargs["headers"]["Authorization"])
 
+    def test_review_exposes_usage_for_cost_reporting(self):
+        module = load_reviewer()
+        module.requests.post.return_value = response({
+            "choices": [{"message": {"content": '{"issues": [], "summary": "ok"}'}}],
+            "usage": {"prompt_tokens": 120, "completion_tokens": 30, "total_tokens": 150},
+        })
+        with patch.dict(os.environ, {"AI_PROVIDER": "deepseek"}):
+            reviewer = module.AICodeReviewer("test-key")
+            result = reviewer.generate_review("+ change", "auth.py")
+        self.assertEqual([], result["issues"])
+        self.assertEqual(150, reviewer.last_usage["total_tokens"])
+        self.assertEqual('{"issues": [], "summary": "ok"}', reviewer.last_raw_response)
+
+    def test_explicit_provider_for_evaluation_does_not_change_environment(self):
+        module = load_reviewer()
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai"}):
+            reviewer = module.AICodeReviewer("test-key", provider="deepseek")
+            self.assertEqual("openai", os.environ["AI_PROVIDER"])
+        self.assertEqual("deepseek", reviewer.provider)
+
     def test_deepseek_run_does_not_require_openai_key_when_rag_disabled(self):
         module = load_reviewer()
         module.OPENAI_API_KEY = None
