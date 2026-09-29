@@ -6,7 +6,7 @@
 
 请不要在 Issue、PR、评论或提交中发布利用步骤、令牌、私人信息等敏感内容。
 
-本私有仓库目前没有公开的专用安全邮箱或 GitHub 私密漏洞报告入口。如果你是协作者，请优先通过已有的私下联系方式告知维护者；如果没有可用的私下渠道，可以提交一个**不含漏洞细节**的简短 Issue，请维护者安排私密沟通。不要把 Issue 当作保密渠道。
+本公开仓库已启用 GitHub 私密漏洞报告。请前往 [Security Advisories](https://github.com/INTREBRO/ai-agent-code-review/security/advisories) 页面，选择 **Report a vulnerability**，将漏洞细节直接提交给维护者。不要把 Issue 当作保密渠道。
 
 报告时可在私密沟通中提供受影响的文件或流程、复现条件、潜在影响和可选的修复建议。请勿上传真实密钥或他人的个人数据。
 
