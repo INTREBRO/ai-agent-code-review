@@ -69,9 +69,19 @@ class AICodeReviewer:
         response.raise_for_status()
         response_data = response.json()
         self.last_usage = response_data.get("usage")
-        review_text = response_data["choices"][0]["message"]["content"]
+        choice = response_data["choices"][0]
+        review_text = choice["message"]["content"]
         self.last_raw_response = review_text
-        return self._parse_review(review_text)
+        try:
+            return self._parse_review(review_text)
+        except (ValueError, TypeError) as error:
+            usage = self.last_usage if isinstance(self.last_usage, dict) else {}
+            raise ValueError(
+                "AI review response could not be parsed "
+                f"(finish_reason={choice.get('finish_reason')}, "
+                f"content_length={len(review_text) if isinstance(review_text, str) else 'non-text'}, "
+                f"completion_tokens={usage.get('completion_tokens')})"
+            ) from error
     
     def _build_prompt(self, code_diff: str, file_path: str, context: str = "") -> str:
         """构建审查提示词"""

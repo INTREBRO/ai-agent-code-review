@@ -208,6 +208,16 @@ class ReviewWorkflowTests(unittest.TestCase):
         with self.assertRaises((ValueError, json.JSONDecodeError)):
             module.AICodeReviewer("key")._parse_review("not JSON")
 
+    def test_model_parse_failure_reports_safe_response_metadata(self):
+        module = load_reviewer()
+        module.requests.post.return_value = response({
+            "choices": [{"finish_reason": "length", "message": {"content": ""}}],
+            "usage": {"prompt_tokens": 200, "completion_tokens": 2000, "total_tokens": 2200},
+        })
+        with patch.dict(os.environ, {"AI_PROVIDER": "deepseek"}):
+            with self.assertRaisesRegex(ValueError, "finish_reason=length.*content_length=0.*completion_tokens=2000"):
+                module.AICodeReviewer("key").generate_review("+ change", "auth.py")
+
     def test_pr_without_text_patch_reports_skipped_files_without_clean_comment(self):
         module = load_reviewer()
         module.OPENAI_API_KEY = "key"
