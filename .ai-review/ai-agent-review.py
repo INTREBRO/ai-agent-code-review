@@ -7,6 +7,7 @@ AI Agent 代码审查脚本
 import os
 import sys
 import json
+import hashlib
 import requests
 from typing import Dict, List, Any
 from pathlib import Path
@@ -15,9 +16,11 @@ from rag.context_builder import build_context
 from rag.embeddings import OpenAIEmbeddings
 from rag.indexer import build_index
 from rag.retriever import retrieve
+from diff_lines import place_issue
 
 # ========== 配置 ==========
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 PR_NUMBER = os.getenv("PR_NUMBER")
 REPO_NAME = os.getenv("REPO_NAME")
@@ -26,7 +29,15 @@ REPO_NAME = os.getenv("REPO_NAME")
 class AICodeReviewer:
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.api_url = "https://api.openai.com/v1/chat/completions"
+        self.provider = os.getenv("AI_PROVIDER", "openai").lower()
+        if self.provider == "deepseek":
+            self.api_url = "https://api.deepseek.com/chat/completions"
+            self.model = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
+        elif self.provider == "openai":
+            self.api_url = "https://api.openai.com/v1/chat/completions"
+            self.model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+        else:
+            raise ValueError("AI_PROVIDER must be 'openai' or 'deepseek'")
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -39,7 +50,7 @@ class AICodeReviewer:
         prompt = self._build_prompt(code_diff, file_path, context)
         
         payload = {
-            "model": os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+            "model": self.model,
             "messages": [
                 {"role": "system", "content": "你是一个专业的代码审查助手，擅长发现代码中的逻辑错误、性能问题、安全风险和可维护性问题。"},
                 {"role": "user", "content": prompt}
@@ -47,6 +58,8 @@ class AICodeReviewer:
             "temperature": 0.3,
             "max_tokens": 2000
         }
+        if self.provider == "deepseek":
+            payload["response_format"] = {"type": "json_object"}
         
         response = requests.post(self.api_url, headers=self.headers, json=payload, timeout=60)
         response.raise_for_status()
@@ -127,6 +140,54 @@ class GitHubClient:
             if len(batch) < 100:
                 return files
         raise RuntimeError("PR contains more files than the reviewer can fetch")
+
+    def get_pr_head_sha(self) -> str:
+        url = f"{self.api_url}/repos/{self.repo}/pulls/{self.pr_number}"
+        response = requests.get(url, headers=self.headers, timeout=30)
+        response.raise_for_status()
+        return response.json()["head"]["sha"]
+
+    def sync_inline_comments(self, issues: List[Dict], head_sha: str) -> List[Dict]:
+        """Post at most five bot-owned comments; return findings not posted inline."""
+        url = f"{self.api_url}/repos/{self.repo}/pulls/{self.pr_number}/comments"
+        try:
+            existing = []
+            for page in range(1, 11):
+                response = requests.get(url, headers=self.headers, params={"per_page": 100, "page": page}, timeout=30)
+                response.raise_for_status()
+                batch = response.json()
+                existing.extend(batch)
+                if len(batch) < 100:
+                    break
+        except Exception as error:
+            print(f"无法读取行内评论，保留总结评论: {error}")
+            return issues
+
+        failed = list(issues[5:])
+        for issue in issues[:5]:
+            fingerprint = "|".join((head_sha, issue["file"], str(issue["line"]), issue["side"], issue["message"]))
+            marker = "<!-- ai-agent-inline:" + hashlib.sha256(fingerprint.encode("utf-8")).hexdigest() + " -->"
+            body = f"{marker}\n**AI 审查建议**：{issue['message']}"
+            if issue.get("suggestion"):
+                body += f"\n\n修复建议：{issue['suggestion']}"
+            own_comment = next((comment for comment in existing
+                                if marker in comment.get("body", "")
+                                and (comment.get("user") or {}).get("login") == "github-actions[bot]"), None)
+            try:
+                if own_comment:
+                    if own_comment["body"] != body:
+                        update_url = f"{self.api_url}/repos/{self.repo}/pulls/comments/{own_comment['id']}"
+                        response = requests.patch(update_url, headers=self.headers, json={"body": body}, timeout=30)
+                        response.raise_for_status()
+                else:
+                    payload = {"body": body, "commit_id": head_sha, "path": issue["file"],
+                               "line": issue["line"], "side": issue["side"]}
+                    response = requests.post(url, headers=self.headers, json=payload, timeout=30)
+                    response.raise_for_status()
+            except Exception as error:
+                print(f"行内评论失败，保留总结评论: {error}")
+                failed.append(issue)
+        return failed
     
     def post_review_comment(self, issues: List[Dict], summary: str) -> bool:
         """发布审查评论到 PR"""
@@ -206,7 +267,11 @@ class GitHubClient:
 # ========== 主流程 ==========
 def main():
     # 验证环境变量
-    if not all([OPENAI_API_KEY, GITHUB_TOKEN, PR_NUMBER, REPO_NAME]):
+    provider = os.getenv("AI_PROVIDER", "openai").lower()
+    if provider not in {"openai", "deepseek"}:
+        raise ValueError("AI_PROVIDER must be 'openai' or 'deepseek'")
+    review_api_key = DEEPSEEK_API_KEY if provider == "deepseek" else OPENAI_API_KEY
+    if not all([review_api_key, GITHUB_TOKEN, PR_NUMBER, REPO_NAME]):
         print("❌ 缺少必要的环境变量")
         sys.exit(1)
     
@@ -219,19 +284,23 @@ def main():
     print(f"找到 {len(files)} 个文件变更")
     
     # 2. AI 审查
-    reviewer = AICodeReviewer(OPENAI_API_KEY)
+    reviewer = AICodeReviewer(review_api_key)
     all_issues = []
+    inline_issues = []
     summaries = []
     reviewed_files = 0
     skipped_files = [file["filename"] for file in files[10:]]
     index = None
     embeddings = None
     if os.getenv("RAG_ENABLED", "false").lower() == "true":
-        try:
-            embeddings = OpenAIEmbeddings(OPENAI_API_KEY)
-            index = build_index(Path.cwd(), embeddings, Path(".rag-cache/index.json"))
-        except Exception as error:
-            print(f"仓库上下文不可用，继续纯 Diff 审查: {error}")
+        if not OPENAI_API_KEY:
+            print("RAG 需要 OPENAI_API_KEY 用于 embeddings，继续纯 Diff 审查")
+        else:
+            try:
+                embeddings = OpenAIEmbeddings(OPENAI_API_KEY)
+                index = build_index(Path.cwd(), embeddings, Path(".rag-cache/index.json"))
+            except Exception as error:
+                print(f"仓库上下文不可用，继续纯 Diff 审查: {error}")
     
     for file in files[:10]:  # 限制审查文件数，避免超时
         file_path = file["filename"]
@@ -257,9 +326,18 @@ def main():
             for issue in result["issues"]:
                 issue["file"] = file_path
                 all_issues.append(issue)
+                location = place_issue(issue, file_path, patch)
+                if location:
+                    inline_issues.append(dict(issue, **location))
     
     # 3. 保存审查结果，即使发布评论失败也保留可检查的报告。
     summary = "\n".join(summaries)
+    failed_inline = inline_issues
+    if inline_issues:
+        try:
+            failed_inline = github_client.sync_inline_comments(inline_issues, github_client.get_pr_head_sha())
+        except Exception as error:
+            print(f"行内评论不可用，保留总结评论: {error}")
     output = {
         "pr_number": PR_NUMBER,
         "issues": all_issues,
@@ -267,6 +345,9 @@ def main():
         "issue_count": len(all_issues),
         "reviewed_files": reviewed_files,
         "skipped_files": skipped_files,
+        "inline_comments": {"attempted": len(inline_issues),
+                            "posted": len(inline_issues) - len(failed_inline),
+                            "fallback": len(failed_inline)},
     }
     
     with open("review-report.json", "w", encoding="utf-8") as f:
