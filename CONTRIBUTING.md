@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢关注 AI Agent Code Review。本仓库是公开的面试展示项目。参与讨论或提交改动时，请遵守[行为准则](CODE_OF_CONDUCT.md)。
+感谢关注 AI Agent Code Review。参与讨论或提交改动时，请遵守[行为准则](CODE_OF_CONDUCT.md)。
 
 ## 提问题或建议
 
