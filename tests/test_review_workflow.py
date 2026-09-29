@@ -57,6 +57,65 @@ class ReviewWorkflowTests(unittest.TestCase):
         self.assertEqual(0, module.requests.post.call_count)
         self.assertIn("Bug", module.requests.patch.call_args.kwargs["json"]["body"])
 
+    def test_inline_comment_uses_changed_line_and_does_not_duplicate_on_rerun(self):
+        module = load_reviewer()
+        client = module.GitHubClient("token", "owner/repo", "3")
+        issue = {"file": "auth.py", "line": 10, "side": "RIGHT", "severity": "warning", "message": "Check input", "suggestion": "Validate"}
+        self.assertTrue(callable(getattr(client, "sync_inline_comments", None)))
+        module.requests.get.return_value = response([])
+        module.requests.post.return_value = response({"id": 101})
+        self.assertEqual([], client.sync_inline_comments([issue], "head-sha"))
+        first = module.requests.post.call_args.kwargs["json"]
+        self.assertEqual(("auth.py", 10, "RIGHT", "head-sha"),
+                         (first["path"], first["line"], first["side"], first["commit_id"]))
+        module.requests.get.return_value = response([{
+            "id": 101, "body": first["body"], "user": {"login": "github-actions[bot]"}
+        }])
+        self.assertEqual([], client.sync_inline_comments([issue], "head-sha"))
+        self.assertEqual(1, module.requests.post.call_count)
+
+    def test_inline_post_failure_returns_finding_for_summary(self):
+        module = load_reviewer()
+        client = module.GitHubClient("token", "owner/repo", "3")
+        issue = {"file": "auth.py", "line": 10, "side": "RIGHT", "message": "Check input"}
+        self.assertTrue(callable(getattr(client, "sync_inline_comments", None)))
+        module.requests.get.return_value = response([])
+        module.requests.post.side_effect = RuntimeError("GitHub rejected comment")
+        with patch.object(module.sys, "stdout", io.StringIO()):
+            self.assertEqual([issue], client.sync_inline_comments([issue], "head-sha"))
+
+    def test_main_reports_inline_result_and_keeps_summary_comment(self):
+        module = load_reviewer()
+        module.OPENAI_API_KEY = "key"
+        module.GITHUB_TOKEN = "token"
+        module.PR_NUMBER = "3"
+        module.REPO_NAME = "owner/repo"
+        module.requests.get.side_effect = [
+            response([{"filename": "auth.py", "patch": "@@ -1 +1 @@\n-old\n+unsafe_change"}]),
+            response({"head": {"sha": "head-sha"}}),
+            response([]),
+            response([]),
+        ]
+        module.requests.post.side_effect = [
+            response({"choices": [{"message": {"content": json.dumps({
+                "issues": [{"severity": "warning", "line": 1, "message": "Check input"}], "summary": "One issue"
+            })}}]}),
+            response({"id": 101}),
+            response({"id": 9}),
+        ]
+        previous = Path.cwd()
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"AI_PROVIDER": "openai", "RAG_ENABLED": "false"}), \
+             patch.object(module.sys, "stdout", io.StringIO()):
+            try:
+                os.chdir(directory)
+                module.main()
+                report = json.loads(Path("review-report.json").read_text(encoding="utf-8"))
+            finally:
+                os.chdir(previous)
+        self.assertEqual(1, report["inline_comments"]["posted"])
+        self.assertEqual(1, report["issue_count"])
+        self.assertEqual(3, module.requests.post.call_count)
+
     def test_model_error_fails_instead_of_posting_clean_review(self):
         module = load_reviewer()
         module.requests.post.side_effect = RuntimeError("OpenAI unavailable")
@@ -69,6 +128,60 @@ class ReviewWorkflowTests(unittest.TestCase):
         with patch.dict(os.environ, {"OPENAI_MODEL": "gpt-4.1-mini"}):
             module.AICodeReviewer("key").generate_review("+ change", "auth.py")
         self.assertEqual("gpt-4.1-mini", module.requests.post.call_args.kwargs["json"]["model"])
+
+    def test_deepseek_review_uses_its_endpoint_and_model(self):
+        module = load_reviewer()
+        module.requests.post.return_value = response({"choices": [{"message": {"content": '{"issues": [], "summary": "ok"}'}}]})
+        with patch.dict(os.environ, {"AI_PROVIDER": "deepseek", "DEEPSEEK_MODEL": "deepseek-flash"}):
+            result = module.AICodeReviewer("test-deepseek-key").generate_review("+ change", "auth.py")
+        self.assertEqual([], result["issues"])
+        args, kwargs = module.requests.post.call_args
+        self.assertEqual("https://api.deepseek.com/chat/completions", args[0])
+        self.assertEqual("deepseek-flash", kwargs["json"]["model"])
+        self.assertEqual({"type": "json_object"}, kwargs["json"].get("response_format"))
+        self.assertEqual("Bearer test-deepseek-key", kwargs["headers"]["Authorization"])
+
+    def test_deepseek_run_does_not_require_openai_key_when_rag_disabled(self):
+        module = load_reviewer()
+        module.OPENAI_API_KEY = None
+        module.DEEPSEEK_API_KEY = "test-deepseek-key"
+        module.GITHUB_TOKEN = "token"
+        module.PR_NUMBER = "3"
+        module.REPO_NAME = "owner/repo"
+        module.requests.get.return_value = response([])
+        with patch.dict(os.environ, {"AI_PROVIDER": "deepseek", "RAG_ENABLED": "false"}), patch.object(module.sys, "stdout", io.StringIO()):
+            try:
+                module.main()
+            except SystemExit:
+                self.fail("DeepSeek review must not require an OpenAI key")
+        module.requests.post.assert_not_called()
+
+    def test_unknown_provider_is_rejected_before_network_calls(self):
+        module = load_reviewer()
+        with patch.dict(os.environ, {"AI_PROVIDER": "unknown"}):
+            with self.assertRaisesRegex(ValueError, "AI_PROVIDER"):
+                module.AICodeReviewer("test-key")
+
+    def test_deepseek_without_openai_key_skips_rag_embeddings(self):
+        module = load_reviewer()
+        module.OPENAI_API_KEY = None
+        module.DEEPSEEK_API_KEY = "test-deepseek-key"
+        module.GITHUB_TOKEN = "token"
+        module.PR_NUMBER = "3"
+        module.REPO_NAME = "owner/repo"
+        module.requests.get.return_value = response([])
+        previous = Path.cwd()
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.dict(os.environ, {"AI_PROVIDER": "deepseek", "RAG_ENABLED": "true"}), \
+             patch.object(module, "OpenAIEmbeddings") as embeddings, \
+             patch.object(module.sys, "stdout", io.StringIO()) as output:
+            try:
+                os.chdir(directory)
+                module.main()
+            finally:
+                os.chdir(previous)
+        self.assertEqual(0, embeddings.call_count)
+        self.assertIn("RAG", output.getvalue())
 
     def test_malformed_model_output_is_not_treated_as_no_issues(self):
         module = load_reviewer()
@@ -102,6 +215,8 @@ class ReviewWorkflowTests(unittest.TestCase):
         module.REPO_NAME = "owner/repo"
         module.requests.get.side_effect = [
             response([{"filename": "auth.py", "patch": "@@ -1 +1 @@\n+unsafe_change"}]),
+            response({"head": {"sha": "head-sha"}}),
+            response([]),
             response([]),
         ]
         module.requests.post.side_effect = [
@@ -109,6 +224,7 @@ class ReviewWorkflowTests(unittest.TestCase):
                 "issues": [{"severity": "warning", "line": 1, "message": "Check input", "suggestion": "Validate input"}],
                 "summary": "One issue",
             })}}]}),
+            response({"id": 101}),
             response({"id": 9}),
         ]
         previous = Path.cwd()
