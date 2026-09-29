@@ -1,0 +1,131 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:import/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "jsx-a11y",
+    "import",
+    "security",
+    "no-secrets"
+  ],
+  "rules": {
+    // ========== 命名规范 ==========
+    "camelcase": ["error", { "properties": "always" }],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "function",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "typeLike",
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": "enumMember",
+        "format": ["UPPER_CASE"]
+      }
+    ],
+
+    // ========== 代码复杂度 ==========
+    "complexity": ["error", { "max": 10 }],
+    "max-depth": ["error", 4],
+    "max-nested-callbacks": ["error", 3],
+    "max-params": ["error", 5],
+    "max-statements": ["warn", 50],
+    "max-lines": ["warn", 500],
+    "max-lines-per-function": ["warn", 100],
+
+    // ========== 安全风险 ==========
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-script-url": "error",
+    "react/no-danger": "error",
+    "react/no-danger-with-children": "error",
+    "security/detect-object-injection": "error",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-potentially-dangerous-regexp": "error",
+    "no-secrets/no-secrets": "error",
+
+    // ========== 可维护性 ==========
+    "no-magic-numbers": ["warn", { "ignore": [-1, 0, 1, 100, 200, 404, 500] }],
+    "no-duplicate-imports": "error",
+    "no-redeclare": "error",
+    "no-unused-vars": "off",  // 由 @typescript-eslint 处理
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "consistent-return": "error",
+    "curly": ["error", "all"],
+
+    // ========== 性能 ==========
+    "no-loop-func": "warn",
+    "react/jsx-no-bind": ["warn", { "allowArrowFunctions": true }],
+    "react/no-multi-comp": ["warn", { "max": 3 }],
+
+    // ========== 最佳实践 ==========
+    "eqeqeq": ["error", "always"],
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+    "no-debugger": "error",
+    "no-alert": "warn",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-arrow-callback": "error",
+    "prefer-template": "error",
+    "object-shorthand": "error",
+    "no-underscore-dangle": "warn",
+
+    // ========== TypeScript 特定 ==========
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/prefer-nullish-coalescing": "error",
+    "@typescript-eslint/prefer-optional-chain": "error",
+
+    // ========== React 特定 ==========
+    "react/prop-types": "off",  // 由 TypeScript 处理
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+    "react/display-name": "off",
+    "react/self-closing-comp": "error",
+    "react/no-children-prop": "error",
+    "react/no-dangerously-set-innerhtml": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
+  },
+  "ignorePatterns": ["dist/", "build/", "*.config.js", "*.config.ts"]
+}

@@ -1,0 +1,405 @@
+# AI Agent 代码审查配置文件
+# 版本: 1.0
+# 适用团队: 15 人，每日 20+ PR
+
+# ==========================================
+# 基础配置
+# ==========================================
+project:
+  name: "your-project-name"
+  language: ["javascript", "python", "java"]  # 项目使用的主要语言
+  frameworks: ["react", "express", "spring"]  # 使用的框架
+  
+# 审查触发条件
+trigger:
+  on_pr_create: true          # PR 创建时触发
+  on_pr_update: true          # PR 更新时触发
+  on_schedule: "0 2 * * *"   # 定时扫描（每日凌晨2点）
+  ignore_draft: true          # 忽略 Draft PR
+  ignore_wip: true            # 忽略 WIP PR（标题含 [WIP]）
+  ignore_patterns:            # 忽略的文件模式
+    - "**.md"
+    - "**.test.js"
+    - "docs/**/*"
+    - "dist/**/*"
+
+# ==========================================
+# 代码规范检查规则
+# ==========================================
+rules:
+  # 命名规范
+  naming:
+    enabled: true
+    severity: "warning"  # error | warning | info
+    rules:
+      variable:
+        case_style: "camelCase"  # camelCase | snake_case | UPPER_SNAKE_CASE
+        min_length: 3
+        max_length: 30
+        blacklist: ["temp", "tmp", "foo", "bar", "data", "info"]
+      
+      function:
+        case_style: "camelCase"
+        must_start_with_verb: true
+        min_length: 5
+        max_length: 50
+        blacklist: ["handler", "processor", "doIt"]
+      
+      class:
+        case_style: "PascalCase"
+        must_be_noun: true
+        min_length: 4
+        max_length: 40
+      
+      constant:
+        case_style: "UPPER_SNAKE_CASE"
+        min_length: 5
+        max_length: 50
+  
+  # 代码格式
+  formatting:
+    enabled: true
+    severity: "warning"
+    rules:
+      indent_style: "space"  # space | tab
+      indent_size: 2          # 前端: 2, 后端: 4
+      max_line_length: 100    # 字符
+      max_file_length: 500     # 行
+      max_function_length: 50  # 行
+      max_class_methods: 20
+      max_nesting_depth: 4
+      require_semicolons: true
+      require_trailing_commas: false
+  
+  # 复杂度检查
+  complexity:
+    enabled: true
+    severity: "error"
+    thresholds:
+      cyclomatic_complexity:
+        warning: 10
+        error: 15
+        block: 20
+      cognitive_complexity:
+        warning: 15
+        error: 25
+      maintainability_index:
+        warning: 70
+        error: 50
+  
+  # 重复代码检测
+  duplication:
+    enabled: true
+    severity: "warning"
+    thresholds:
+      min_tokens: 50
+      min_lines: 10
+      max_duplicates: 5
+
+# ==========================================
+# 安全漏洞检查
+# ==========================================
+security:
+  enabled: true
+  severity: "critical"
+  check_list:
+    - "sql_injection"
+    - "xss"
+    - "hardcoded_secrets"
+    - "insecure_deserialization"
+    - "missing_access_control"
+    - "csrf"
+    - "command_injection"
+    - "path_traversal"
+  
+  # 敏感信息模式
+  sensitive_patterns:
+    - "api_key"
+    - "secret"
+    - "password"
+    - "token"
+    - "private_key"
+  
+  # 依赖漏洞扫描
+  dependency_scan:
+    enabled: true
+    severity: "critical"
+    block_on:
+      - "CVSS >= 9.0"
+      - "CVSS >= 7.0 && no_fix_available"
+    warn_on:
+      - "CVSS >= 7.0 && fix_available"
+      - "CVSS >= 4.0"
+
+# ==========================================
+# 性能检查
+# ==========================================
+performance:
+  enabled: true
+  severity: "warning"
+  check_list:
+    - "n_plus_1_query"
+    - "missing_pagination"
+    - "large_object_allocation"
+    - "inefficient_loop"
+    - "missing_cache"
+    - "synchronous_io"
+  
+  # N+1 查询检测
+  n_plus_1:
+    enabled: true
+    orm_patterns:
+      - "sequelize"
+      - "typeorm"
+      - "django-orm"
+  
+  # 缺少分页检测
+  missing_pagination:
+    enabled: true
+    max_records_without_pagination: 100
+
+# ==========================================
+# 可维护性检查
+# ==========================================
+maintainability:
+  enabled: true
+  severity: "warning"
+  check_list:
+    - "god_class"           # 上帝类
+    - "magic_number"         # 魔法数字
+    - "long_parameter_list"   # 过长参数列表
+    - "deep_inheritance"     # 深度继承
+    - "shotgun_surgery"     # 散弹式修改
+    - "feature_envy"         # 依恋情结
+  
+  thresholds:
+    god_class:
+      max_methods: 20
+      max_lines: 500
+    magic_number:
+      exclude: [-1, 0, 1, 100, 200, 404, 500]  # 常见合法魔法数字
+    long_parameter_list:
+      max_parameters: 5
+
+# ==========================================
+# AI 模型配置
+# ==========================================
+ai_model:
+  provider: "openai"  # openai | anthropic | custom
+  model: "gpt-4"
+  temperature: 0.3
+  max_tokens: 2000
+  prompt_template: |
+    你是一个专业的代码审查助手。请审查以下代码变更，重点关注：
+    1. 代码逻辑正确性
+    2. 潜在的性能问题
+    3. 安全风险
+    4. 可维护性问题
+    
+    代码示例：
+    {code_diff}
+    
+    请提供具体的修改建议，包括代码示例。
+
+# ==========================================
+# 通知配置
+# ==========================================
+notifications:
+  # PR 评论
+  pr_comment:
+    enabled: true
+    template: ".ai-review-pr-comment.md"  # 评论模板路径
+  
+  # Slack 通知
+  slack:
+    enabled: true
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#code-review"
+    notify_on:
+      - "critical"  # 仅通知严重问题
+  
+  # 邮件通知
+  email:
+    enabled: false
+    smtp_server: "smtp.example.com"
+    smtp_port: 587
+    from: "ai-review@example.com"
+    notify_on:
+      - "critical"
+  
+  # 企业微信通知（可选）
+  wechat_work:
+    enabled: false
+    webhook_url: "${WECHAT_WORK_WEBHOOK}"
+
+# ==========================================
+# 质量门禁
+# ==========================================
+quality_gates:
+  # 阻塞合并的条件
+  block_merge_on:
+    - type: "severity"
+      value: "critical"
+      count: 0  # 严重问题数量必须为 0
+    
+    - type: "severity"
+      value: "error"
+      count: 0  # 错误数量必须为 0
+  
+    - type: "coverage_decrease"
+      value: "-2%"  # 覆盖率下降超过 2% 则阻塞
+  
+  # 警告但不阻塞
+  warn_on:
+    - type: "severity"
+      value: "warning"
+      count: 10  # 警告超过 10 个
+    
+    - type: "complexity_increase"
+      value: "+20%"  # 复杂度增加超过 20%
+
+# ==========================================
+# 自学习机制
+# ==========================================
+learning:
+  enabled: true
+  
+  # 反馈收集
+  feedback_collection:
+    enabled: true
+    methods:
+      - "explicit"  # 开发者标记有用/无用
+      - "implicit"  # 分析是否采纳建议
+      - "discussion" # PR 评论中的讨论
+  
+  # 规则权重调整
+  rule_weight_adjustment:
+    enabled: true
+    learning_rate: 0.01
+    decay_factor: 0.95  # 旧反馈衰减
+    min_weight: 0.1
+    max_weight: 2.0
+  
+    adjustment_rules:
+      true_positive: +0.1      # 真正例：增加权重
+      false_positive: -0.05     # 假正例：降低权重
+      adopted_suggestion: +0.05  # 建议被采纳：小幅增加
+      ignored_suggestion: -0.02  # 建议被忽略：小幅降低
+  
+  # 新模式发现
+  pattern_discovery:
+    enabled: true
+    min_frequency: 10  # 最少出现 10 次才考虑
+    similarity_threshold: 0.8  # 相似度阈值
+    auto_add: false  # 不自动添加，需要人工审核
+  
+  # 模型微调
+  model_fine_tuning:
+    enabled: true
+    frequency: "weekly"  # weekly | monthly
+    min_samples: 100      # 最少需要多少样本才微调
+    validation_split: 0.2   # 验证集比例
+    auto_deploy: false     # 不自动部署，需要人工审核
+
+# ==========================================
+# 报告配置
+# ==========================================
+reporting:
+  # 报告格式
+  format: "markdown"  # markdown | json | html
+  
+  # 报告详情级别
+  detail_level: "standard"  # brief | standard | detailed
+  
+  # 包含代码示例
+  include_code_examples: true
+  
+  # 包含修复建议
+  include_fix_suggestions: true
+  
+  # 包含参考链接
+  include_references: true
+  
+  # 输出路径
+  output_path: "./review-reports"
+
+# ==========================================
+# 仪表盘配置
+# ==========================================
+dashboard:
+  enabled: true
+  
+  # 数据源
+  data_source:
+    type: "prometheus"  # prometheus | influxdb
+    endpoint: "http://prometheus:9090"
+  
+  # 指标保留期限
+  metrics_retention: "90d"
+  
+  # 告警配置
+  alerts:
+    - name: "High Critical Issues"
+      condition: "critical_issues_count > 5"
+      notify: ["slack", "email"]
+    
+    - name: "Low Adoption Rate"
+      condition: "adoption_rate < 50% for 7d"
+      notify: ["slack"]
+
+# ==========================================
+# 高级配置
+# ==========================================
+advanced:
+  # 并发审查任务数
+  max_concurrent_reviews: 5
+  
+  # 审查超时时间（秒）
+  review_timeout: 600  # 10 分钟
+  
+  # 缓存配置
+  cache:
+    enabled: true
+    ttl: 3600  # 1 小时
+    max_size: "500MB"
+  
+  # 日志级别
+  log_level: "info"  # debug | info | warn | error
+  
+  # 调试模式
+  debug_mode: false
+
+# ==========================================
+# 自定义规则（团队特定规则）
+# ==========================================
+custom_rules:
+  - name: "No Console.log in Production"
+    pattern: "console\\.log\\(.*\\)"
+    file_pattern: "**/*.js"
+    severity: "warning"
+    message: "移除生产环境中的 console.log"
+    
+  - name: "No TODO Without Ticket Reference"
+    pattern: "TODO(?!.*#\\d+)"
+    file_pattern: "**/*.{js,py,java}"
+    severity: "info"
+    message: "TODO 必须包含票务引用（如 #123）"
+    
+  - name: "Max 3 Nesting Levels in JSX"
+    pattern: "jsx-depth > 3"
+    file_pattern: "**/*.jsx"
+    severity: "warning"
+    message: "JSX 嵌套层级超过 3 层，建议提取子组件"
+
+# ==========================================
+# 白名单（跳过审查）
+# ==========================================
+whitelist:
+  # 白名单用户（他们的 PR 不审查）
+  users: []
+  
+  # 白名单分支
+  branches: ["hotfix/**"]
+  
+  # 白名单文件
+  files: ["**.min.js", "**.bundle.js"]

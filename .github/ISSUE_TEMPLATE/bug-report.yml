@@ -1,0 +1,131 @@
+---
+name: "Bug 报告"
+description: "报告一个 Bug 或异常行为"
+title: "[Bug] "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 感谢您报告 Bug！
+        
+        请填写以下信息，帮助我们快速定位和修复问题。
+        
+        <!--- 删除不需要的部分 --->
+
+  - type: input
+    id: summary
+    attributes:
+      label: "Bug 摘要"
+      description: "简短描述 Bug"
+      placeholder: "例如：AI 审查报告格式错误"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "严重程度"
+      description: "该 Bug 的严重程度"
+      options:
+        - "🔴 Critical - 系统崩溃、数据丢失"
+        - "⛔ High - 主要功能异常"
+        - "⚠️ Medium - 部分功能受影响"
+        - "💡 Low - 界面或文档问题"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "组件"
+      description: "该 Bug 影响的组件"
+      options:
+        - "AI 审查引擎"
+        - "规则引擎"
+        - "CI/CD 集成"
+        - "GitHub Actions"
+        - "报告生成器"
+        - "仪表盘"
+        - "文档"
+        - "其他"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "详细描述"
+      description: "请详细描述 Bug 的表现"
+      placeholder: "例如：当 PR 包含多个文件时，AI 审查报告只显示第一个文件的问题..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "复现步骤"
+      description: "如何复现这个 Bug"
+      placeholder: |
+        1. 创建一个包含 5 个文件的 PR
+        2. 等待 AI 审查完成
+        3. 查看 PR 评论
+        4. 发现只显示前 3 个文件的问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "期望行为"
+      description: "您期望的正确行为是什么"
+      placeholder: "期望显示所有 5 个文件的问题"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "实际行为"
+      description: "实际发生了什么"
+      placeholder: "只显示了前 3 个文件的问题"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: "环境信息"
+      description: "运行环境（操作系统、Node 版本、浏览器等）"
+      placeholder: "例如：Ubuntu 22.04, Node.js 18.16.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "相关日志"
+      description: "相关的错误日志或截图"
+      placeholder: "粘贴错误日志或截图链接"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "附加信息"
+      description: "任何其他相关信息"
+      placeholder: "其他有助于定位问题的信息"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "确认"
+      options:
+        - label: "我已搜索现有 Issues，确认没有重复报告"
+          required: true
+        - label: "我已提供足够的信息来复现问题"
+          required: true
