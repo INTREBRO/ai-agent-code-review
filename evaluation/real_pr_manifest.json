@@ -1,0 +1,413 @@
+{
+  "sources": {
+    "aacr-bench": "68a569759289a83654a59d06db2a72910edf0a4a",
+    "cloud-aeye-cpp": "60733901a3deef2c7128b883cde420fea86d2186"
+  },
+  "cases": [
+    {
+      "base_sha": "f0bf4c731a53aab29ebde0234385b9e63bf70dcd",
+      "id": "nlohmann-json-pr5163",
+      "diff_sha256": "99f225488812f8151af5fb9d43f4d0981eb339d09c1b94443ada11991247c414",
+      "pr_url": "https://github.com/nlohmann/json/pull/5163",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/nlohmann/json/pull/5163#discussion_r3229085080",
+          "line": 1279,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "tests/src/unit-regression2.cpp",
+          "description": "tests/src/unit-regression2.cpp unconditionally suppresses -Wself-assign-overloaded for Clang, but older Clang versions do not recognize that warning group and emit an unknown-warning diagnostic during the test build.",
+          "verification_note": "Source benchmark: commit_advanced, fix_verified=5",
+          "category": "code_clarity"
+        }
+      ],
+      "head_sha": "ee4ee35212f2c168199a8d6aad434869c0297252"
+    },
+    {
+      "base_sha": "0ceda9f2777a495190beb8b6be562b5c9b3e558c",
+      "id": "dragonflydb-dragonfly-pr6011",
+      "diff_sha256": "fcc173d02e27564460fb271061c9acab0dbc4713f7b510336b4ad997a3e5cdf7",
+      "pr_url": "https://github.com/dragonflydb/dragonfly/pull/6011",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/dragonflydb/dragonfly/pull/6011#discussion_r2498089073",
+          "line": 2353,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/facade/dragonfly_connection.cc",
+          "description": "`DiskBackedBackpressureQueue::unique_id` is incremented without synchronization in the constructor. Creating queues on multiple threads races on this shared counter and can assign duplicate or corrupted IDs.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=4.5",
+          "category": "concurrency_safety"
+        },
+        {
+          "evidence_url": "https://github.com/dragonflydb/dragonfly/pull/6011#discussion_r2498084776",
+          "line": 2338,
+          "verification": "verified",
+          "id": "issue-2",
+          "path": "src/facade/dragonfly_connection.cc",
+          "description": "Backpressure reload reconstructs arguments by splitting the serialized command on `\\0` in `LoadBackpressureFromDiskIfNeeded`. This loses correctness for binary-safe arguments that may contain embedded NUL bytes.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=4",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "607c9bcca200124745af6c0d9781f4db4b8d3a81"
+    },
+    {
+      "base_sha": "c851c39837e60465c676be5902318b6435eba1e2",
+      "id": "fastfetch-cli-fastfetch-pr2137",
+      "diff_sha256": "5484af56b2e0b4e98c84db9bc9d9213fcb143e3d97d29265167e3a6bff66e0bf",
+      "pr_url": "https://github.com/fastfetch-cli/fastfetch/pull/2137",
+      "language": "C",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/fastfetch-cli/fastfetch/pull/2137#discussion_r3121103134",
+          "line": 2695,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/logo/builtin.c",
+          "description": "The LimeOS logo entry in `src/logo/builtin.c` uses `FF_COLOR_FG_WHITE` for `.colors`, `.colorKeys`, and `.colorTitle`, making the output invisible on terminals with a light background.",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "edge_case_handling"
+        }
+      ],
+      "head_sha": "8561bf79b269ee8be1105c642aa8e4f1576d9d7b"
+    },
+    {
+      "base_sha": "815b8ba2c92cd25ab4789565e7563fe86ddfc83a",
+      "id": "carla-simulator-carla-pr9652",
+      "diff_sha256": "1321a382f5968b102babf0f92e3961ea3c8134ef0ee8c56a789e7a3098b38aa2",
+      "pr_url": "https://github.com/carla-simulator/carla/pull/9652",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/carla-simulator/carla/pull/9652#discussion_r3050207614",
+          "line": 1297,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "LibCarla/source/carla/road/Map.cpp",
+          "description": "In Map.cpp, the new `continue` on degenerate `edges` skips the `s_current += distancebetweentrees` step at the end of the loop. If `edges.first == edges.second` persists, the loop no longer makes progress and can hang.",
+          "verification_note": "Source benchmark: commit_advanced, fix_verified=3.5. Location adjusted from source line 1298 (context) to added continue at 1297 in pinned diff.",
+          "category": "logic_error"
+        },
+        {
+          "evidence_url": "https://github.com/carla-simulator/carla/pull/9652#discussion_r3050080415",
+          "line": 764,
+          "verification": "verified",
+          "id": "issue-2",
+          "path": "LibCarla/source/carla/road/MeshFactory.cpp",
+          "description": "In MeshFactory.cpp, the refactor changes lane-mark edge computation to always use the extra lane width, which alters the previous solid/final-segment behavior that used zero extra width. This shifts lane marking positions on roads with non-zero extra lane width.",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "4ed53703369b03db47284c920c70ff17081bcd4c"
+    },
+    {
+      "base_sha": "b2948a2bad73e3188bf1f3e0133389ebcd6991c9",
+      "id": "carla-simulator-carla-pr9653",
+      "diff_sha256": "34ccb84b3c8b837fe9a23abec06b22ff56ff98fb97b18efcbeeeefa9fc3f36b1",
+      "pr_url": "https://github.com/carla-simulator/carla/pull/9653",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/carla-simulator/carla/pull/9653#discussion_r3146408228",
+          "line": 81,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "Unreal/CarlaUnreal/Plugins/Carla/Source/Carla/Util/BoundingBoxCalculator.cpp",
+          "description": "BoundingBoxCalculator.cpp reads the first element of TrafficSign->GetTriggerVolumes() as a UBoxComponent without checking whether that entry is null, so this path can dereference a null trigger volume.",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "error_handling"
+        }
+      ],
+      "head_sha": "7649e0aae8ef8c725d86ba9758c642fef310261f"
+    },
+    {
+      "base_sha": "3e9ae1bca07f8155bc4249a21ec41ca2c86fdb93",
+      "id": "libuv-libuv-pr4936",
+      "diff_sha256": "521c7944d4325f19b953b152f6666ff5058f7e3c05c3021434317d6583d25a68",
+      "pr_url": "https://github.com/libuv/libuv/pull/4936",
+      "language": "C",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/libuv/libuv/pull/4936#discussion_r2651871198",
+          "line": 445,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/win/fs.c",
+          "description": "After `CloseHandle(handle)` at the bottom of the loop body in `fs__create_file`, `handle` is not set to `INVALID_HANDLE_VALUE`; if the loop runs all 32 iterations without resolving the path, the function falls through to `clean_and_ret_handle` and returns a closed (invalid) handle to the caller.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "fa3aef007ade8c7d0a4f7f38c5d61cd8950271ff"
+    },
+    {
+      "base_sha": "72cc0fc9a75bf041e84b9d37e7e31e17cb114a9e",
+      "id": "godotengine-godot-pr119999",
+      "diff_sha256": "9d4e33c162e7f21681ac8e41ff0783424da1d313b8cd6925dbc0256981ed2125",
+      "pr_url": "https://github.com/godotengine/godot/pull/119999",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/godotengine/godot/pull/119999#discussion_r3360572796",
+          "line": 179,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "editor/project_manager/project_list.cpp",
+          "description": "In `editor/project_manager/project_list.cpp` under `NOTIFICATION_READY`, the callable for `update_title_size` is bound with an extra argument even though `update_title_size()` takes no parameters. This makes the deferred call and `size_changed` signal invocation fail with an argument-count error.",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "532e204e5cd3216549ed18ccb96308da8f90e06f"
+    },
+    {
+      "base_sha": "fa38eb43df15562492c03cfa54122f2430b275f0",
+      "id": "libuv-libuv-pr5013",
+      "diff_sha256": "61c75ad1d77f0f2bead3a5f84fc372e8c86b56077aa29802b3093079e04d97c1",
+      "pr_url": "https://github.com/libuv/libuv/pull/5013",
+      "language": "C",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/libuv/libuv/pull/5013#discussion_r2835727072",
+          "line": 613,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/win/fs-event.c",
+          "description": "The deletion-path check in src/win/fs-event.c uses the wrong substring literal for the final handle path format. Matching \"$Extend\\$Deleted\" here can miss the zombie directory path that appears as \"\\\\$Extend\\\\$Deleted\\\\\".",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "7cf90b0145821d949f919b07578d0c63b20da3cb"
+    },
+    {
+      "base_sha": "e87e04041c4d771ff76f2f52110e9d2e08b1b1a6",
+      "id": "dragonflydb-dragonfly-pr7545",
+      "diff_sha256": "f5420bca894538d6af8bddfe14ff25c38aba7607a209bac3b5ae283b81dff267",
+      "pr_url": "https://github.com/dragonflydb/dragonfly/pull/7545",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/dragonflydb/dragonfly/pull/7545#discussion_r3385932530",
+          "line": 92,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/facade/ok_main.cc",
+          "description": "AsyncCmd::handle in src/facade/ok_main.cc is unused dead state. The coroutine registration path uses ResolveAwaiter::await_suspend instead, so this member has no effect.",
+          "verification_note": "Source benchmark: commit_advanced, fix_verified=5",
+          "category": "dead_import"
+        }
+      ],
+      "head_sha": "0c7a33f78d7423571159ed731549b751ba5a3f1b"
+    },
+    {
+      "base_sha": "a258d7d3dfab1f5f6da52ed02d285927cb6bb70b",
+      "id": "microsoft-terminal-pr18953",
+      "diff_sha256": "e8eec7fa2b1ab2dc099945431050d0d48f5738b3fdcb5534c18502855d30eff8",
+      "pr_url": "https://github.com/microsoft/terminal/pull/18953",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/microsoft/terminal/pull/18953#discussion_r2138909247",
+          "line": 4892,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/cascadia/TerminalApp/TerminalPage.cpp",
+          "description": "In `TerminalPage::_updatePaneResources`, the result of `_colorFromKey(res, requestedTheme, broadcastColorKey)` is discarded in the `broadcastColorKey` branch, so the broadcast border color never updates from the resource lookup.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=4.5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "ce1ba031d52844a29dd244ba23b9799b8023a5d4"
+    },
+    {
+      "base_sha": "aed41fdabe3c5381395e2a7a8272c7519f3c289f",
+      "id": "opencv-opencv-pr29240",
+      "diff_sha256": "e239a8b7fc7f2e338ef3c1171c4da9294fe338657d5ff810721fa9e6b48f5b2a",
+      "pr_url": "https://github.com/opencv/opencv/pull/29240",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/opencv/opencv/pull/29240#discussion_r3387679916",
+          "line": 2040,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "modules/features2d/src/brisk.cpp",
+          "description": "The inner `<< 1` in the coeff6 expression at modules/features2d/src/brisk.cpp still left-shifts a signed intermediate that can be negative, so undefined behavior remains.",
+          "verification_note": "Source benchmark: path_touched_later, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "a26c9b63fd92fbffa35c14cf922e630070ea0755"
+    },
+    {
+      "base_sha": "063ad31a6018af928816ead25ffbb7584f667d22",
+      "id": "tesseract-ocr-tesseract-pr4138",
+      "diff_sha256": "8bbaee598163e09e58e247de8c0dda4ef0ea3f2f062ae7e82a5b5450700b4943",
+      "pr_url": "https://github.com/tesseract-ocr/tesseract/pull/4138",
+      "language": "C++",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/tesseract-ocr/tesseract/pull/4138#discussion_r1347206984",
+          "line": 504,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/api/hocrrenderer.cpp",
+          "description": "`return true` is placed on line 506 of BeginDocumentHandler immediately after `SetContentType(\"application/xhtml+xml\")`, making all subsequent AppendString calls unreachable dead code and producing an empty document body.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "head_sha": "3173bfeda9f47e010c270363d6841f237b671fc9"
+    },
+    {
+      "base_sha": "ddadbdf5df2dc3c2f6af67e21091a77b548e9021",
+      "id": "valkey-io-valkey-pr3836",
+      "diff_sha256": "f85b4010b38918457b21a52c05a43896f75702d167b54a84aa980e39667702d5",
+      "pr_url": "https://github.com/valkey-io/valkey/pull/3836",
+      "language": "C",
+      "source": "cloud-aeye-cpp",
+      "expected": [
+        {
+          "evidence_url": "https://github.com/valkey-io/valkey/pull/3836#discussion_r3310242793",
+          "line": 783,
+          "verification": "verified",
+          "id": "issue-1",
+          "path": "src/cluster.c",
+          "description": "In src/cluster.c:isValidAuxChar, `isalnum` is still called with `c` instead of the unsigned-cast `ch`. Passing a negative non-EOF value to `isalnum` is undefined behavior on platforms with signed `char`.",
+          "verification_note": "Source benchmark: rejected_pr, fix_verified=5",
+          "category": "logic_error"
+        }
+      ],
+      "excluded_expected": [
+        {
+          "evidence_url": "https://github.com/valkey-io/valkey/pull/3836#discussion_r3310247337",
+          "reason": "Source line 789 is unchanged context, outside changed-line scoring scope."
+        }
+      ],
+      "head_sha": "9321c56ac2bad587e274764b91a9fea5b34a5e54"
+    },
+    {
+      "id": "comfyanonymous-comfyui-pr6542",
+      "base_sha": "832e3f5ca3c357e527fdf811502357bd2798425e",
+      "language": "Python",
+      "diff_sha256": "136175e537f168b0afdfb5aff0bfef68601ca71421911440a1bddb658081e70e",
+      "expected": [
+        {
+          "id": "issue-1",
+          "verification_note": "Original human review discussion checked against pinned changed line.",
+          "line": 109,
+          "category": "Code Defect",
+          "description": "The DirectML branch for causal mask initialization fails to set uninitialized tensor values to negative infinity, causing blank image generation. Replace `torch.empty().triu_(1)` with `torch.full(..., -torch.finfo(x.dtype).max).triu_(1)` to properly initialize the mask.",
+          "path": "comfy/clip_model.py",
+          "evidence_url": "https://github.com/Comfy-Org/ComfyUI/pull/6542#discussion_r1948494279",
+          "verification": "verified"
+        }
+      ],
+      "source": "aacr-bench",
+      "head_sha": "b55c2247654476fbc744e572ba7a834fd9378745",
+      "pr_url": "https://github.com/comfyanonymous/ComfyUI/pull/6542"
+    },
+    {
+      "id": "infiniflow-ragflow-pr6691",
+      "base_sha": "0a42e5777eb966b26aaf8f2a7d593ae99a4aa87a",
+      "language": "Python",
+      "diff_sha256": "cb6eb4a65544d1b682012f6aac42a9dd84363a07016c26bd98d2f44dc0f45307",
+      "expected": [
+        {
+          "id": "issue-1",
+          "verification_note": "Original human review discussion checked against pinned changed line.",
+          "line": 114,
+          "category": "Code Defect",
+          "description": "Accessing `.nodes` on the result of `nx.connected_components` (which returns node sets, not graph objects) causes AttributeError; use the set of nodes directly.",
+          "path": "graphrag/entity_resolution.py",
+          "evidence_url": "https://github.com/infiniflow/ragflow/pull/6691#discussion_r2021226466",
+          "verification": "verified"
+        }
+      ],
+      "source": "aacr-bench",
+      "head_sha": "a63caa1087852ada98964678be26b7c4d8363af6",
+      "pr_url": "https://github.com/infiniflow/ragflow/pull/6691"
+    },
+    {
+      "id": "cline-cline-pr1808",
+      "base_sha": "4d8bdf29458db722a2bce1dfacc50771959b32fa",
+      "language": "TypeScript",
+      "diff_sha256": "2f798dc5882f22ad8aef3920eb174ca9e8a2620d0c3df8f706af4911a3b6c1fb",
+      "expected": [
+        {
+          "id": "issue-1",
+          "verification_note": "Original human review discussion checked against pinned changed line.",
+          "line": 17,
+          "category": "Code Defect",
+          "description": "The condition for Azure API shape detection was incorrectly modified to check the base URL for 'deepseek'; it should verify 'azure.com' in the base URL while excluding DeepSeek models via the model ID to prevent duplicated logic.",
+          "path": "src/api/providers/openai.ts",
+          "evidence_url": "https://github.com/cline/cline/pull/1808#discussion_r1957418765",
+          "verification": "verified"
+        }
+      ],
+      "source": "aacr-bench",
+      "head_sha": "cb4d5c90460885942cbbae0298b95f4ee5682086",
+      "pr_url": "https://github.com/cline/cline/pull/1808"
+    },
+    {
+      "id": "filamentphp-filament-pr15267",
+      "base_sha": "ce4d9d08df41142ff219bb3dc44968084eaae0dc",
+      "language": "PHP",
+      "diff_sha256": "13bf973b31b1d81da7f570c9ec38701b07b4909d8966427f48be1a2b418a1530",
+      "expected": [
+        {
+          "id": "issue-1",
+          "verification_note": "Original human review discussion checked against pinned changed line.",
+          "line": 184,
+          "category": "Code Defect",
+          "description": "The new condition for '->' JSON syntax must skip columns starting with `json_extract()` to prevent double-wrapping, as the two syntax forms are mutually exclusive and the translatable plugin already handles these columns.",
+          "path": "packages/support/src/helpers.php",
+          "evidence_url": "https://github.com/filamentphp/filament/pull/15267#discussion_r1905128882",
+          "verification": "verified"
+        }
+      ],
+      "source": "aacr-bench",
+      "head_sha": "d47632c0583bac481d4ce7cc9b6b1711d0f8e0fc",
+      "pr_url": "https://github.com/filamentphp/filament/pull/15267"
+    },
+    {
+      "id": "facebook-react-pr33059",
+      "base_sha": "88b976740467f9dfabae03c79a8eff9033c35050",
+      "language": "JavaScript",
+      "diff_sha256": "c95a41edf64597ac06efe7b903f046f69e2a32728f7f5195491aa8c6b2ab9ab1",
+      "expected": [
+        {
+          "id": "issue-1",
+          "verification_note": "Original human review discussion checked against pinned changed line.",
+          "line": 3264,
+          "category": "Code Defect",
+          "description": "The added condition requiring `existingStateHook.next !== null` may cause the memoized state to be ignored for form components with a single state hook.",
+          "path": "packages/react-reconciler/src/ReactFiberHooks.js",
+          "evidence_url": "https://github.com/react/react/pull/33059#discussion_r2067493186",
+          "verification": "verified"
+        }
+      ],
+      "source": "aacr-bench",
+      "head_sha": "be58f26f9a6e579d8df36d901a59249d9ac1393f",
+      "pr_url": "https://github.com/facebook/react/pull/33059"
+    }
+  ],
+  "version": 1
+}
