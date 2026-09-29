@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢关注 AI Agent Code Review。本仓库目前为私有的面试展示项目；只有获得访问权限的协作者才能查看代码、提交 Issue 或创建 PR。参与讨论时请遵守[行为准则](CODE_OF_CONDUCT.md)。
+感谢关注 AI Agent Code Review。本仓库是公开的面试展示项目。参与讨论或提交改动时，请遵守[行为准则](CODE_OF_CONDUCT.md)。
 
 ## 提问题或建议
 
@@ -20,7 +20,7 @@
 
 4. 在 PR 中写清变更目的、验证方式和限制，并使用仓库现有的 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md)。
 
-项目主要审查流程使用 Python 3.11；GitHub Actions 会安装 `requests>=2.31,<3`。本地运行真实审查还需要 `OPENAI_API_KEY`、`GITHUB_TOKEN`、`REPO_NAME` 和 `PR_NUMBER`，详见 [README](README.md)。离线测试不需要这些密钥。
+项目主要审查流程使用 Python 3.11；GitHub Actions 会安装 `requests>=2.31,<3`。本地运行真实审查还需要 `GITHUB_TOKEN`、`REPO_NAME`、`PR_NUMBER` 和所选模型提供方的密钥，详见 [README](README.md)。离线测试不需要这些密钥。
 
 ## 审查约定
 
