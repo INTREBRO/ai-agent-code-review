@@ -60,4 +60,4 @@ python .ai-review/ai-agent-review.py
 
 仓库还保留了早期 Node.js 原型和独立的代码质量实验工作流；真实 PR 审查使用上文所述的 Python 流程。原有的[方案文档](ai-agent-code-review-workflow.md)与[实施清单](IMPLEMENTATION-CHECKLIST.md)包含未来设想，不代表现有功能。
 
-参与项目请看[贡献指南](CONTRIBUTING.md)；安全问题请看[安全说明](SECURITY.md)。本项目采用 [MIT 许可证](LICENSE)。
+参与项目请看[贡献指南](CONTRIBUTING.md)；安全问题请看[安全说明](SECURITY.md)。本项目采用 [Apache License 2.0](LICENSE)。
