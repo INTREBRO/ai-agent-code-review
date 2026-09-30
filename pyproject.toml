@@ -12,7 +12,7 @@ version = "1.0.0"
 description = "AI Agent 自动化代码审查工作流"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "INTREBRO", email = "your-email@example.com"},
 ]
@@ -22,7 +22,7 @@ maintainers = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -161,6 +161,9 @@ exclude_lines = [
 ]
 
 # ---- 项目元数据（PEP 621）----
+
+[tool.setuptools]
+license-files = ["LICENSE", "NOTICE", "LICENSES/MIT-legacy.txt"]
 
 [tool.setuptools.packages.find]
 include = ["ai_review*"]

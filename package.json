@@ -20,7 +20,7 @@
     "static-analysis"
   ],
   "author": "INTREBRO",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/INTREBRO/ai-agent-code-review.git"
